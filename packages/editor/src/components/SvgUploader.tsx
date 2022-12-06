@@ -1,33 +1,41 @@
-import React, { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { FileUploader } from "react-drag-drop-files";
+import { useRecoilState } from "recoil";
+import { fileContentsSelector } from "../state/atoms";
 
 export default function SvgUploader() {
-  const onDrop = useCallback((acceptedFiles) => {
-    acceptedFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.readAsText(file);
+  const setDomain = useRecoilState(fileContentsSelector("domain"))[1];
+  const setSubstance = useRecoilState(fileContentsSelector("substance"))[1];
+  const setStyle = useRecoilState(fileContentsSelector("style"))[1];
 
-      reader.onabort = () => console.log("file reading was aborted");
-      reader.onerror = () => console.log("file reading has failed");
-      reader.onload = () => {
-        // Do whatever you want with the file contents
-        const binaryStr = reader.result;
-        setThing(binaryStr!.toString());
-      };
-    });
-  }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
-  const [thing, setThing] = useState<string>("blah");
+  const handleChange = (svg: File) => {
+    const reader = new FileReader();
+    reader.readAsText(svg);
+    reader.onabort = () => console.log("file reading was aborted");
+    reader.onerror = () => console.log("file reading has failed");
+    reader.onload = () => {
+      const svgText = reader.result?.toString();
+      if (!svgText) {
+        return;
+      }
+
+      const styleStart = svgText.search(/<sty>/);
+      const styleEnd = svgText.search(/<\/sty>/);
+
+      if (styleStart != -1 && styleEnd != -1) {
+        const style = svgText.substring(styleStart + 5, styleEnd);
+        setStyle({ name: "imported file", contents: style });
+      } else {
+        setStyle({ name: "nothing", contents: "nothing" });
+      }
+    };
+  };
 
   return (
-    <section
-      className="container"
-      style={{ width: "100%", height: "100%", position: "relative" }}
-    >
-      <div {...getRootProps({ className: "dropZone" })}>
-        <input {...getInputProps()} />
-        <p>Drag SVG here to upload... {thing} </p>
-      </div>
-    </section>
+    <FileUploader
+      handleChange={handleChange}
+      name="file"
+      types={["SVG"]}
+      multiple={false}
+    />
   );
 }
