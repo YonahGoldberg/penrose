@@ -4,6 +4,7 @@
  *
  */
 
+import { sub } from "engine/AutodiffFunctions";
 import { shapedefs } from "shapes/Shapes";
 import { Shape } from "types/shape";
 import { LabelCache, State } from "types/state";
@@ -185,7 +186,6 @@ export const RenderStatic = async (
   svg.setAttribute("version", "1.2");
   svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   svg.setAttribute("viewBox", `0 0 ${canvas.width} ${canvas.height}`);
-  svg.setAttribute("penrose", "0");
 
   return Promise.all(
     computeShapes(varyingValues).map((shape) =>
