@@ -18,11 +18,13 @@ export default function SvgUploader() {
         return;
       }
 
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(svgText, "text/xml");
       const styleStart = svgText.search(/<sty>/);
       const styleEnd = svgText.search(/<\/sty>/);
 
       if (styleStart != -1 && styleEnd != -1) {
-        const style = svgText.substring(styleStart + 5, styleEnd);
+        const style = svgText.substring(styleStart + 5, styleEnd).trim();
         setStyle({ name: "imported file", contents: style });
       } else {
         setStyle({ name: "nothing", contents: "nothing" });
